@@ -61,7 +61,7 @@ RUN apk update && \
     python3 -m ensurepip --upgrade && \
     git clone git://deluge-torrent.org/deluge.git /tmp/deluge && \
     cd /tmp/deluge && \
-    sed -i "s/libtorrent/libtorrent==1.2.18/g" requirements.txt && \
+    sed -i "s/libtorrent/libtorrent==1.2.17/g" requirements.txt && \
     pip3 --timeout 40 --retries 10  install --no-cache-dir --upgrade  \
         wheel \
         pip \
