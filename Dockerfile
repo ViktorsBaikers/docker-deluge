@@ -77,7 +77,7 @@ WORKDIR /config
 
 VOLUME ["/config"]
 
-EXPOSE 8112 58846 52201 52201/udp
+EXPOSE 8112 58846 52202 52202/udp
 
 #HEALTHCHECK --interval=5m --timeout=3s --start-period=30s \
 #    CMD /usr/local/bin/healthcheck.sh 58846 8112
