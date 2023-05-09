@@ -21,7 +21,7 @@ RUN apk update && \
     make 
 
 
-FROM emmercm/libtorrent:2.0.8-alpine
+FROM emmercm/libtorrent:1.2.18-alpine
 
 LABEL name="docker-deluge" \
       maintainer="Jee jee@eer.fr" \
@@ -77,6 +77,6 @@ WORKDIR /config
 VOLUME ["/config"]
 
 HEALTHCHECK --interval=5m --timeout=3s --start-period=30s \
-    CMD /usr/local/bin/healthcheck.sh 58846 8112
+    CMD /usr/local/bin/healthcheck.sh 52201 8112
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
