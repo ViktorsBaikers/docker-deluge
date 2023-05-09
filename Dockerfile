@@ -1,4 +1,27 @@
-FROM emmercm/libtorrent:1.2.14-alpine
+FROM alpine:3.17 AS builder-unrar
+WORKDIR /tmp
+
+ARG UNRAR_VERSION=6.1.5
+
+RUN apk update && \
+    apk add --no-cache \
+        curl \
+        tar \
+        gzip \
+        make \
+        g++ && \
+    mkdir -p /tmp/unrar && \
+    curl -o \
+    /tmp/unrar.tar.gz -L \
+    "https://www.rarlab.com/rar/unrarsrc-${UNRAR_VERSION}.tar.gz" && \  
+    tar xf \
+        /tmp/unrar.tar.gz -C \
+        /tmp/unrar --strip-components=1 && \
+    cd /tmp/unrar && \
+    make 
+
+
+FROM emmercm/libtorrent:1.2.18-alpine
 
 LABEL name="docker-deluge" \
       maintainer="Jee jee@eer.fr" \
@@ -8,15 +31,17 @@ LABEL name="docker-deluge" \
       org.opencontainers.image.source="https://github.com/jee-r/docker-deluge"
 
 COPY rootfs /
+COPY --from=builder-unrar /tmp/unrar/unrar /tmp/unrar
 
-ENV PYTHON_EGG_CACHE=/config/.cache
+ENV PYTHON_EGG_CACHE=/config/.cache \
+    XDG_CONFIG_HOME=/config \
+    LOGLEVEL=info
 
 RUN apk update && \
     apk upgrade && \
     apk add --no-cache --virtual=base --upgrade \
         bash \
         p7zip \
-        unrar \
         unzip \
         git \
         tzdata \
@@ -32,9 +57,11 @@ RUN apk update && \
         musl-dev \
         cargo \
         python3-dev && \
+    install -v -m755 /tmp/unrar /usr/local/bin && \
     python3 -m ensurepip --upgrade && \
     git clone git://deluge-torrent.org/deluge.git /tmp/deluge && \
     cd /tmp/deluge && \
+    sed -i "s/libtorrent/libtorrent==1.2.18/g" requirements.txt && \
     pip3 --timeout 40 --retries 10  install --no-cache-dir --upgrade  \
         wheel \
         pip \
@@ -52,7 +79,7 @@ VOLUME ["/config"]
 
 EXPOSE 8112 58846 52201 52201/udp
 
-HEALTHCHECK --interval=5m --timeout=3s --start-period=30s \
-    CMD /usr/local/bin/healthcheck.sh 58846 8112
+#HEALTHCHECK --interval=5m --timeout=3s --start-period=30s \
+#    CMD /usr/local/bin/healthcheck.sh 58846 8112
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
